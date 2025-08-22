@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/regular.min.css" integrity="sha512-wwQ/gaGbUFM5xDtqajxQCwISzM1GWLK1T3Ml4ZIIrQ3AciO7bDi9eRynkzdpXwiwGBmdpCgZqfVYeZu5UjVeCw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
     <style>
+        
         .ltn__main-menu li > ul, .ltn__main-menu .sub-menu
         {
             min-width: 300px;
@@ -41,6 +42,45 @@
     .thumbnail_images ul li:hover {
         border-color: #000;
     } 
+    .zoom-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.pdp-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.lens {
+    position: absolute;
+    display: none;
+    width: 120px;
+    height: 120px;
+    border: 2px solid rgba(0, 0, 0, .3);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .2);
+    pointer-events: none;
+}
+
+.zoom-result {
+    width: 400px;
+    height: 400px;
+    border: 1px solid #ccc;
+    background-repeat: no-repeat;
+    background-size: 200% auto; /* Makes zoom effect */
+    display: none; /* Hidden until hover */
+}
+/* .zoom-result {
+    width: 400px;
+    height: 400px;
+    border: 1px solid #ccc;
+    background: #fff no-repeat;
+    display: none;
+    margin-top: 15px;
+} */
         </style>
 </head>
 
@@ -440,30 +480,46 @@
                                     </div>
                                 </div>
                             </div> -->
-                            <div class="col-md-6">
-    <div class="ltn__shop-details-img-gallery">
+                            <!-- old Product -->
+                          <div class="col-md-6">
+    <div class="ltn__shop-details-img-gallery pdp-media">
         <!-- Large Image -->
         <div class="ltn__shop-details-large-img">
-            <div class="single-large-img">
+            <div class="single-large-img zoom-wrap" data-zoom="../uploads/product/soap (1).png">
                 <a href="../uploads/product/soap (1).png" data-rel="lightcase:myCollection">
-                    <img id="main_product_image" src="../uploads/product/soap (1).png" alt="Image">
+                    <img id="main_product_image" class="pdp-img" src="../uploads/product/soap (1).png" alt="Image">
                 </a>
+                <div class="lens" aria-hidden="true"></div>
             </div>
         </div>
 
+        <!-- Zoom Result Window -->
+        <div class="zoom-result" aria-hidden="true"></div>
+
         <!-- Thumbnails -->
-        <div class="" style="">
-            <ul style="list-style: none; padding-left: 0; display: flex; gap: 10px;width: 500px!important;">
-                
-                <li><img onclick="changeImage(this)" src="../uploads/product/soap.png" width="70px" height="70px" alt="Image" style="border: 1px solid black;"></li>
-                <li><img onclick="changeImage(this)" src="../uploads/product/Rice Soap en.jpeg" width="70px" height="70px" alt="Image" style="border: 1px solid black;"></li>
-                <li><img onclick="changeImage(this)" src="../uploads/product/Ricesoapmr.jpeg" width="70px" height="70px" alt="Image" style="border: 1px solid black;"></li>
-               
-                <li><img onclick="changeImage(this)" src="../uploads/product/soap 2.png" width="70px" height="70px"alt="Image" style="border: 1px solid black;"></li>
+        <div>
+            <ul class="thumbs" style="list-style: none; padding-left: 0; display: flex; gap: 10px;width: 500px!important;">
+                <li>
+                    <img data-full="../uploads/product/soap.png" data-zoom="../uploads/product/soap.png" 
+                         src="../uploads/product/soap.png" width="70" height="70" alt="Image" style="border: 1px solid black;">
+                </li>
+                <li>
+                    <img data-full="../uploads/product/Rice Soap en.jpeg" data-zoom="../uploads/product/Rice Soap en.jpeg" 
+                         src="../uploads/product/Rice Soap en.jpeg" width="70" height="70" alt="Image" style="border: 1px solid black;">
+                </li>
+                <li>
+                    <img data-full="../uploads/product/Ricesoapmr.jpeg" data-zoom="../uploads/product/Ricesoapmr.jpeg" 
+                         src="../uploads/product/Ricesoapmr.jpeg" width="70" height="70" alt="Image" style="border: 1px solid black;">
+                </li>
+                <li>
+                    <img data-full="../uploads/product/soap 2.png" data-zoom="../uploads/product/soap 2.png" 
+                         src="../uploads/product/soap 2.png" width="70" height="70" alt="Image" style="border: 1px solid black;">
+                </li>
             </ul>
         </div>
     </div>
 </div>
+
 
                             <div class="col-md-6">
                                 <div class="modal-product-info shop-details-info pl-0">
@@ -1203,6 +1259,79 @@
         }
         
         </script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+
+    
+(function($){
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    function setupZoom($wrap){
+        var $img = $wrap.find('.pdp-img');
+        var $lens = $wrap.find('.lens');
+        var $result = $('.zoom-result');
+
+        //var zoomSrc = "";
+         $wrap.removeData('zoom');
+         zoomSrc = $wrap.data('zoom');
+        
+       $('.zoom-result').css('background-image', 'url("' + zoomSrc + '")');
+        // $('.zoom-result').css('background-image', 'url(' + zoomSrc + ')');
+        // $('.zoom-result').css('background-image', 'url("../uploads/product/soap (1).png")');
+
+        const hi = new Image();
+        hi.onload = function(){
+            const nativeW = hi.naturalWidth, nativeH = hi.naturalHeight;
+
+            $wrap.on('mouseenter', function(){
+                $lens.show(); $result.show();
+            }).on('mouseleave', function(){
+                $lens.hide(); $result.hide();
+            }).on('mousemove', function(e){
+                const off = $wrap.offset();
+                const mx = e.pageX - off.left;
+                const my = e.pageY - off.top;
+                const w = $wrap.width(), h = $wrap.height();
+
+                if(mx<0 || my<0 || mx>w || my>h){ $lens.hide(); $result.hide(); return; }
+
+                const lw = $lens.width(), lh = $lens.height();
+                const lx = clamp(mx - lw/2, 0, w - lw);
+                const ly = clamp(my - lh/2, 0, h - lh);
+                $lens.css({ left: lx+'px', top: ly+'px' });
+
+                const rx = (mx / w) * nativeW;
+                const ry = (my / h) * nativeH;
+
+                const rzW = $result.width(), rzH = $result.height();
+                const bgX = - (rx - rzW / 2);
+                const bgY = - (ry - rzH / 2);
+
+                $result.css('background-position', bgX + 'px ' + bgY + 'px');
+                $result.css('background-size', nativeW + 'px ' + nativeH + 'px');
+            });
+        };
+        hi.src = zoomSrc;
+    }
+
+    $(function(){
+        setupZoom($('.zoom-wrap'));
+
+        // Thumbnail click
+        $('.thumbs img').on('click', function(){
+            const full = $(this).data('full');
+            const zoom = $(this).data('zoom');
+            const $wrap = $('.zoom-wrap');
+
+            $('#main_product_image').attr('src', full);
+            $wrap.attr('data-zoom', zoom);
+            $('.zoom-result').hide();
+            $wrap.off();
+            setupZoom($wrap);
+        });
+    });
+})(jQuery);
+</script>
 
     
   
